@@ -22,5 +22,6 @@ Following is the data format :
    "score": 3,
    "response": "positive"
 }
+```
 
 You will need to ocnfigure Kafka Consumer and InfluxDB Client.
