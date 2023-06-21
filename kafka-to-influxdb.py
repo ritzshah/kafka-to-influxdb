@@ -54,8 +54,8 @@ influxdb-client
 
 #Define all Variables
 
-bucket = os.environ['globex-bucket'] #"globex-bucket"
-org = os.environ['globex'] #"globex"
+bucket = os.environ['bucket'] #"globex-bucket"
+org = os.environ['org'] #"globex"
 token = os.environ['influxdb-token'] #"2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA=="
 # Store the URL of your InfluxDB instance
 url = os.environ['influxdb-url'] #"http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com"

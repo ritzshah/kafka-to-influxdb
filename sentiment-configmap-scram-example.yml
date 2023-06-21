@@ -16,5 +16,6 @@ data:
   bootstrap_servers: 'kafka-kafka-bootstrap.globex-mw-user1.svc.cluster.local:9092'
   bucket: globex-bucket
   org: globex
-  token: 2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA==
-  url: 'http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com'
+  influxdb-token: 2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA==
+  influxdb-url: 'http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com'
+  influxdb-measurement: 'sentiment-measurement'
