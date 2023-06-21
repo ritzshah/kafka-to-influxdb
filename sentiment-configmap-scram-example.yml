@@ -2,7 +2,7 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: sentiment-configmap
-  namespace: sentiment-analysis-user1
+  namespace: influxdb-project-user1
 data:
   sasl_mechanism: SCRAM-SHA-512
   language_topic: reviews.sentiment
@@ -14,3 +14,7 @@ data:
   TRANSFORMERS_CACHE: /app/cache
   not_good_language_topic: reviews.denied
   bootstrap_servers: 'kafka-kafka-bootstrap.globex-mw-user1.svc.cluster.local:9092'
+  bucket: globex-bucket
+  org: globex
+  token: 2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA==
+  url: 'http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com'
