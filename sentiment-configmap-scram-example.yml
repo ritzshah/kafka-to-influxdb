@@ -7,7 +7,7 @@ data:
   sasl_mechanism: SCRAM-SHA-512
   language_topic: reviews.sentiment
   good_language_topic: reviews.moderated
-  topic: reviews.moderated
+  topic: reviews.sentiment
   username: globex
   security_protocol: SASL_PLAINTEXT
   password: globex
