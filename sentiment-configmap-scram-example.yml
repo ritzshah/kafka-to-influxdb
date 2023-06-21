@@ -19,3 +19,11 @@ data:
   influxdb-token: 2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA==
   influxdb-url: 'http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com'
   influxdb-measurement: sentiment-measurement
+  reviews_sentiment_sink: >-
+    http://kafka-sink-ingress.knative-eventing.svc.cluster.local/sentiment-analysis-user1/reviews_sentiment_sink
+  moderated_reviews_sink: >-
+    http://kafka-sink-ingress.knative-eventing.svc.cluster.local/sentiment-analysis-user1/moderated-reviews-sink
+  ce_type: review-moderated-event
+  ce_source: review-moderated
+  denied_reviews_sink: >-
+    http://kafka-sink-ingress.knative-eventing.svc.cluster.local/sentiment-analysis-user1/denied-reviews-sink
