@@ -3,6 +3,7 @@
  Data to be moved from Kafka Topic and Influxdb.
 
 Following is the data format :
+ ```yaml
  {
    "product": {
       "category": "clothing",
