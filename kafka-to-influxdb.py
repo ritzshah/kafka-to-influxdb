@@ -80,6 +80,8 @@ client = influxdb_client.InfluxDBClient(
    org=org
 )
 
+print(client)
+
 # Set up a Kafka consumer
 consumer = KafkaConsumer(
     topic,
@@ -101,7 +103,8 @@ for message in consumer:
         json_payload = message.value
         # Parse the CloudEvent from the JSON payload
         json_data = json.loads(json_payload)
-
+        prin("Printing consumer message")
+        print(json_data)
         # Create a new InfluxDB data point
         point = influxdb_client.Point(bucket)
 
@@ -129,6 +132,8 @@ for message in consumer:
                     pass
                 else:
                     point.field(key, value)
+                    print("In product")
+                    print(key,value)
 
             with InfluxDBClient(url, token) as client:
                 with client.write_api(write_options=SYNCHRONOUS) as writer:
