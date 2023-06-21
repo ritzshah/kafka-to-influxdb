@@ -103,7 +103,7 @@ for message in consumer:
         json_payload = message.value
         # Parse the CloudEvent from the JSON payload
         json_data = json.loads(json_payload)
-        prin("Printing consumer message")
+        print("Printing consumer message",)
         print(json_data)
         # Create a new InfluxDB data point
         point = influxdb_client.Point(bucket)
