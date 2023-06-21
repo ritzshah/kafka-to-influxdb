@@ -53,14 +53,6 @@ influxdb-client
 '''
 
 #Define all Variables
-
-bucket = os.environ['bucket'] #"globex-bucket"
-org = os.environ['org'] #"globex"
-token = os.environ['influxdb-token'] #"2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA=="
-# Store the URL of your InfluxDB instance
-url = os.environ['influxdb-url'] #"http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com"
-influxdb_measurement = os.environ['influxdb-measurement'] #'sentiment-measurement'
-
 TRANSFORMERS_CACHE = os.environ['TRANSFORMERS_CACHE']
 bootstrap_servers = os.environ['bootstrap_servers']
 username = os.environ['username']
@@ -73,6 +65,13 @@ attributes = {
     "type": os.environ['ce_type'],
     "source": os.environ['ce_source']
 }
+
+bucket = os.environ['bucket']
+org = os.environ['org']
+token = os.environ['influxdb-token']
+# Store the URL of your InfluxDB instance
+url = os.environ['influxdb-url']
+influxdb_measurement = os.environ['influxdb-measurement']
 
 # Setup influxdb client and Kafka Topic
 client = influxdb_client.InfluxDBClient(
