@@ -24,4 +24,4 @@ Following is the data format :
 }
 ```
 
-You will need to ocnfigure Kafka Consumer and InfluxDB Client.
+You will need to configure Kafka Consumer and InfluxDB Client.
