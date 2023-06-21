@@ -1,5 +1,10 @@
-bucket = "globex-bucket"
-org = "globex"
-token = "2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA=="
-# Store the URL of your InfluxDB instance
-url="http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com"
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: influxdb-configmap
+  namespace: influxdb-project-user1
+data:
+  bucket: globex-bucket
+  org: globex
+  token: 2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA==
+  url: 'http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com'

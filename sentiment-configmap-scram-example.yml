@@ -1,16 +1,16 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: sentiment
+  name: sentiment-configmap
   namespace: sentiment-analysis-user1
 data:
   sasl_mechanism: SCRAM-SHA-512
   language_topic: reviews.sentiment
   good_language_topic: reviews.moderated
   topic: reviews.moderated
-  username: CHANGEME
+  username: globex
   security_protocol: SASL_PLAINTEXT
-  password: CHANGEME
+  password: globex
   TRANSFORMERS_CACHE: /app/cache
   not_good_language_topic: reviews.denied
   bootstrap_servers: 'kafka-kafka-bootstrap.globex-mw-user1.svc.cluster.local:9092'

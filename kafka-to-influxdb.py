@@ -37,6 +37,10 @@ import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client import InfluxDBClient, Point, WriteOptions
 from dateutil import parser
+from cloudevents.http import CloudEvent
+from cloudevents.http import from_http
+from cloudevents.conversion import to_binary
+import requests
 
 '''
 requirements.txt
@@ -48,49 +52,34 @@ influxdb
 influxdb-client
 '''
 
-bucket = "globex-bucket"
-org = "globex"
-token = "2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA=="
-# Store the URL of your InfluxDB instance
-url="http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com"
+#Define all Variables
 
+bucket = os.environ['globex-bucket'] #"globex-bucket"
+org = os.environ['globex'] #"globex"
+token = os.environ['influxdb-token'] #"2avH4WIAuQagJ_E5Q-SgA50x1K79IT5ruql27hH0bklvYZrrnKeuc3lvlvMx_SSvPwTlVe3chV66IcOUl43EaA=="
+# Store the URL of your InfluxDB instance
+url = os.environ['influxdb-url'] #"http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com"
+influxdb_measurement = os.environ['influxdb-measurement'] #'sentiment-measurement'
+
+TRANSFORMERS_CACHE = os.environ['TRANSFORMERS_CACHE']
+bootstrap_servers = os.environ['bootstrap_servers']
+username = os.environ['username']
+password = os.environ['password']
+sasl_mechanism = os.environ['sasl_mechanism']
+security_protocol = os.environ['security_protocol']
+topic = os.environ['topic']
+reviews_sentiment_sink = os.environ['reviews_sentiment_sink']
+attributes = {
+    "type": os.environ['ce_type'],
+    "source": os.environ['ce_source']
+}
+
+# Setup influxdb client and Kafka Topic
 client = influxdb_client.InfluxDBClient(
    url=url,
    token=token,
    org=org
 )
-
-#TRANSFORMERS_CACHE = os.environ['TRANSFORMERS_CACHE']
-#bootstrap_servers = os.environ['bootstrap_servers']
-#topic = os.environ['topic']
-#produce_topic = os.environ['produce_topic']
-#username = os.environ['username']
-#password = os.environ['password']
-#sasl_mechanism = os.environ['sasl_mechanism']
-#security_protocol = os.environ['security_protocol']
-
-#def analyze_sentiment(text):
-#    classifier = pipeline("sentiment-analysis")
-#    result = classifier(text)[0]
-#    return result["label"]
-
-
-#bootstrap_servers = ['af421721f4e394a0f85fcab354ff51f0-468260975.us-east-2.elb.amazonaws.com:9092']
-topic = 'reviews.moderated'
-produce_topic = 'reviews.moderated'
-bootstrap_servers = ['kafka-kafka-brokers.globex-mw-user1.svc.cluster.local:9092']
-username = 'globex'
-password = 'globex'
-sasl_mechanism = 'SCRAM-SHA-512'
-security_protocol = 'SASL_PLAINTEXT'
-
-#consumer = KafkaConsumer(
-#    produce_topic,
-#    bootstrap_servers=bootstrap_servers,
-#    auto_offset_reset='earliest',
-#    enable_auto_commit=True,
-#    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
-#)
 
 # Set up a Kafka consumer
 consumer = KafkaConsumer(
@@ -105,31 +94,6 @@ consumer = KafkaConsumer(
 #    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
 )
 
-#producer = KafkaProducer(
-#    bootstrap_servers=bootstrap_servers,
-#    value_serializer=lambda m: json.dumps(m).encode('utf-8')
-#)
-
-#influxdb_host = 'localhost'
-#influxdb_port = 8086
-#influxdb_dbname = 'globex'
-influxdb_measurement = 'sentiment-measurement'
-#influxdb_username = 'globex'
-#influxdb_password = 'globex-password'
-#influxdb_client = InfluxDBClient(influxdb_host, influxdb_port, influxdb_username, influxdb_password)
-#influxdb_client.switch_database(influxdb_dbname)
-
-# Set up a Kafka producer
-#producer = KafkaProducer(
-#    bootstrap_servers=bootstrap_servers,
-#    sasl_plain_username=username,
-#    sasl_plain_password=password,
-#    security_protocol=security_protocol,
-#    sasl_mechanism=sasl_mechanism,
-#    value_serializer=lambda m: json.dumps(m).encode('utf-8')
-#)
-
-print("Test")
 # Start consuming Kafka messages
 for message in consumer:
     try:
@@ -138,48 +102,9 @@ for message in consumer:
         json_payload = message.value
         # Parse the CloudEvent from the JSON payload
         json_data = json.loads(json_payload)
-        '''
-        json_body = [
-            {
-                "measurement": influxdb_measurement,
-                "time": json_data['time'],
-                "fields": {
-                    "rating": json_data['data']['rating'],
-                    "timestamp": json_data['data']['timestamp'],
-                    "score": json_data['data']['score']
-                },
-                "tags": {
-                    "product_id": json_data['data']['product']['product_id'],
-                    "product_name": json_data['data']['product']['product_name'],
-                    "category": json_data['data']['product']['category'],
-                    "name": json_data['data']['user']['name'],
-                    "customer_id": json_data['data']['user']['customer_id'],
-                    "browser": json_data['data']['user']['browser'],
-                    "region": json_data['data']['user']['region'],
-                    "response": json_data['data']['response']
-                }
-            }
-        ]'''
-        #print(json_data)
-        #json_data_data = json_data["data"]
-        #print("DATA SPECIFIC INFORMATION")
-        #print(json_data_data)
-        #point = influxdb_client.Point(json_data_data)
-        #print("POINT DATA with JSON ONLY DATA")
-        #print(point)
-        #point = Point("{bucket}")
-        #print(point)
-        #point.tag("data", json_data_data["data"])
-        #print("POINT TAG")
-        #print(point.tag)
-        #point.time(parser.parse(json_data["time"]))
-        #print(json_data)
 
         # Create a new InfluxDB data point
         point = influxdb_client.Point(bucket)
-        
-        #datetime_data = int(json_data_data["timestamp"])
-        #print(datetime_data)
 
         # Set the time for the data point
         timestamp = json_data["timestamp"]
@@ -188,10 +113,7 @@ for message in consumer:
             timestamp = float(timestamp)
 
         datetime = datetime.fromtimestamp(timestamp/1000.0)
-        #print(datetime)
-        #datetime = datetime.strptime(datetime, '%m/%d/%Y, %H:%M:%S')
         datetime_str = datetime.strftime("%m/%d/%Y, %H:%M:%S")
-        #print(datetime_str)
 
         point.time(parser.parse(datetime_str))
 
@@ -212,14 +134,12 @@ for message in consumer:
             with InfluxDBClient(url, token) as client:
                 with client.write_api(write_options=SYNCHRONOUS) as writer:
                     try:
-                        writer.write(bucket, org="globex", record=[point])
+                        writer.write(bucket, org, record=[point])
                     except InfluxDBError as e:
                         print(e)
 
         # Flatten the "user" field
         user = json_data["user"]
-        #print("User data")
-        #print(user)
 
         # Set the remaining fields and tags
         for key, value in json_data["user"].items():
@@ -229,12 +149,11 @@ for message in consumer:
                     pass
                 else:
                     point.field(key, value)
-                    #print(key,value)
 
         with InfluxDBClient(url, token) as client:
             with client.write_api(write_options=SYNCHRONOUS) as writer:
                 try:
-                    writer.write(bucket, org="globex", record=[point])
+                    writer.write(bucket, org, record=[point])
                 except InfluxDBError as e:
                     print(e)
 
@@ -250,7 +169,7 @@ for message in consumer:
         with InfluxDBClient(url, token) as client:
             with client.write_api(write_options=SYNCHRONOUS) as writer:
                 try:
-                    writer.write(bucket, org="globex", record=[point])
+                    writer.write(bucket, org, record=[point])
                 except InfluxDBError as e:
                     print(e)
 
