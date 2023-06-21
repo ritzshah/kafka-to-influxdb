@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: sentiment-1
+  namespace: globex-mw-user1
+data:
+  sasl_mechanism: PLAIN
+  language_topic: language-topic
+  good_language_topic: language-topic
+  topic: globex.reviews
+  produce_topic: globex.sentiment
+  username: CHANGEME
+  security_protocol: SASL_PLAINTEXT
+  password: CHANGEME
+  TRANSFORMERS_CACHE: /app/cache
+  not_good_language_topic: language-topic
+  bootstrap_servers: 'kafka-kafka-bootstrap.globex-mw-user1.svc.cluster.local:9092'

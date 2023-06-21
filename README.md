@@ -1,27 +1,86 @@
-# kafka-to-influxdb
+# sentiment-analysis
 
- Data to be moved from Kafka Topic and Influxdb.
+Repository for sentiment analysis related code - to be used for text analysis and part of AI/ML.
 
-Following is the data format :
- ```yaml
- {
-   "product": {
-      "category": "clothing",
-      "product_id": "444434",
-      "product_name": "Red Hat Impact T-shirt"
-   },
-   "rating": 0,
-   "timestamp": 1687336745669,
-   "user": {
-      "name": "Alison Silva",
-      "browser": "Chrome",
-      "region": "India",
-      "customer_id": "asilva"
-   },
-   "review_text": "Excellent T-shirt",
-   "score": 3,
-   "response": "positive"
-}
+Deployment for both sentiment and language analysis with configmap is available in deployment yaml file in this project folder - use project globex-mw-user1 project or update for your project. Ensure that Kafka is set locally and bootstrap server is setup correctly in configmap. This one is using SCRAM-SHA-512 as sasl_mechanism.
+Download the deployment.yaml file and do a `oc apply -f deployment.yaml` to setup configmap and deployment for both sentiment analysis and language analysis.
+
+Additonal details below.
+To run sentiment analysis with kafa on openshift, follow this :
+
+Create a project in openshift
+In this project create a configmap with following. You will need to change kafka bootsrap with user and password.
+Also change the topics based on the ones you have created and provided R/W access to those topics with the above user/password.
+
+1) ConfigMap in OpenShift Project :
+```
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: sentiment
+  namespace: sentiment
+data:
+  TRANSFORMERS_CACHE: /app/cache
+  bootstrap_servers: <CHANGEME>:443 #Check if you need to change the port as well
+  password: <CHANGEME>
+  produce_topic: produce-topic # This is where the output of the model goes.
+  good_language_topic: good-language-topic # This is where the reviews go based on language filter and identified as good. 
+  not_good_language_topic: not-good-language-topic # This is where the reviews based on language filter and identified as not good.
+  sasl_mechanism: PLAIN
+  security_protocol: SASL_SSL
+  topic: consume-topic # This is the topic from where the model will consume reviews for analysis. 
+  langauage_topic: language-topic # This is not used for now
+  username: <CHANGEME>
 ```
 
-You will need to configure Kafka Consumer and InfluxDB Client.
+2) Create this pod and that's it.
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sentiment-analysis
+spec:
+  containers:
+    - name: sentiment-analysis
+      image: quay.io/rshah/sentiment-analysis-model:latest
+      envFrom:
+        - configMapRef:
+            name: sentiment
+```
+
+How to check once the pod is successfully created. 
+Run the following on different terminals, one to consume and other to producer. 
+Ensure that you have installed kcat on your system. 
+Ensure that the following variables are exported on your terminal shell.
+
+```
+export KAFKA_HOST=<CHANGEME>:443
+export RHOAS_SERVICE_ACCOUNT_CLIENT_ID=<CHANGEME>
+export RHOAS_SERVICE_ACCOUNT_CLIENT_SECRET=<CHANGEME>
+```
+
+Ensure that you use the right topic if its difference than the one listed below.
+
+```
+kcat -t consume-topic  -b "$KAFKA_HOST" \
+ -X security.protocol=SASL_SSL -X sasl.mechanisms=PLAIN \
+ -X sasl.username="$RHOAS_SERVICE_ACCOUNT_CLIENT_ID" \
+ -X sasl.password="$RHOAS_SERVICE_ACCOUNT_CLIENT_SECRET" -P
+```
+
+On this terminal you type your message which will be consumed by model for analysis.
+
+Ensure that you use the right topic if its difference than the one listed below.
+
+```
+kcat -t produce-topic  -b "$KAFKA_HOST" \
+ -X security.protocol=SASL_SSL -X sasl.mechanisms=PLAIN \
+ -X sasl.username="$RHOAS_SERVICE_ACCOUNT_CLIENT_ID" \
+ -X sasl.password="$RHOAS_SERVICE_ACCOUNT_CLIENT_SECRET" -C 
+```
+
+You should see the output here on this second terminal after analysis.
+
+You can also check in the Kafka UI and specific topic messages. The output will be in json format.
+

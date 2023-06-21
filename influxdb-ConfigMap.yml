@@ -1,0 +1,5 @@
+bucket = "globex-bucket" #CHANGE ME
+org = "globex" #CHANGE ME
+token = "INSERT TOKEN HERE" #CHANGE ME
+# Store the URL of your InfluxDB instance
+url="http://influxdb-influxdb.apps.cluster-kcmwd.kcmwd.sandbox1886.opentlc.com" #CHANGE ME
