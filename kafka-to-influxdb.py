@@ -95,90 +95,82 @@ consumer = KafkaConsumer(
 #    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
 )
 
-# Start consuming Kafka messages
-for message in consumer:
-    try:
-        # Get the text message from the Kafka message
-        #print(message)
-        json_payload = message.value
-        # Parse the CloudEvent from the JSON payload
-        json_data = json.loads(json_payload)
-        print("Printing consumer message",)
-        print(json_data)
-        # Create a new InfluxDB data point
-        point = influxdb_client.Point(bucket)
+# Create InfluxDBClient and write_api instances
+with InfluxDBClient(url, token) as client:
+#    write_api = client.write_api(write_options=SYNCHRONOUS)   
+    write_api = client.write_api(write_options=WriteOptions(batch_size=25,
+                                                          flush_interval=10_000,
+                                                          jitter_interval=2_000,
+                                                          retry_interval=5_000,
+                                                          max_retries=5,
+                                                          max_retry_delay=30_000,
+                                                          max_close_wait=300_000,
+                                                          exponential_base=2))
+    
+    # Start consuming Kafka messages
+    for message in consumer:
+        try:
+            # Get the text message from the Kafka message
+            json_payload = message.value
+            # Parse the CloudEvent from the JSON payload
+            json_data = json.loads(json_payload)
+    
+            # Create a new InfluxDB data point
+            point = influxdb_client.Point(bucket)
 
-        # Set the time for the data point
-        timestamp = json_data["timestamp"]
-        #print(timestamp)
-        if isinstance(timestamp, str):
-            timestamp = float(timestamp)
-
-        datetime = datetime.fromtimestamp(timestamp/1000.0)
-        datetime_str = datetime.strftime("%m/%d/%Y, %H:%M:%S")
-
-        point.time(parser.parse(datetime_str))
-
-        # Flatten the "product" field
-        product = json_data["product"]
-        #print("Print product information before for loop to flatten it")
-        #print(product)
-
-        # Set the "product" fields
-        for key, value in json_data["product"].items():
-            if key != "product":
-                if isinstance(value, dict):
-                    # Handle other nested fields if needed
-                    pass
-                else:
-                    point.field(key, value)
-                    print("In product")
-                    print(key,value)
-
-            with InfluxDBClient(url, token) as client:
-                with client.write_api(write_options=SYNCHRONOUS) as writer:
-                    try:
-                        writer.write(bucket, org, record=[point])
-                    except InfluxDBError as e:
-                        print(e)
-
-        # Flatten the "user" field
-        user = json_data["user"]
-
-        # Set the remaining fields and tags
-        for key, value in json_data["user"].items():
-            if key != "user":
-                if isinstance(value, dict):
-                    # Handle other nested fields if needed
-                    pass
-                else:
-                    point.field(key, value)
-
-        with InfluxDBClient(url, token) as client:
-            with client.write_api(write_options=SYNCHRONOUS) as writer:
-                try:
-                    writer.write(bucket, org, record=[point])
-                except InfluxDBError as e:
-                    print(e)
-
-        # Set the remaining fields and tags
-        for key, value in json_data.items():
-            if key != "user" or key != "data":
-                if isinstance(value, dict):
-                    # Handle other nested fields if needed
-                    pass
-                else:
-                    point.field(key, value)
-
-        with InfluxDBClient(url, token) as client:
-            with client.write_api(write_options=SYNCHRONOUS) as writer:
-                try:
-                    writer.write(bucket, org, record=[point])
-                except InfluxDBError as e:
-                    print(e)
-
-    except json.JSONDecodeError:
-        print("Non-JSON message received, skipping...")
-    except KeyError:
-        print("Missing fields in JSON message, skipping...")
+            # Set the time for the data point
+            timestamp = json_data["timestamp"]
+            if isinstance(timestamp, str):
+                timestamp = int(timestamp)
+            timestamp_ms = timestamp * 1000  # Convert to milliseconds
+            
+            datetime = datetime.fromtimestamp(timestamp/1000.0)
+            datetime_str = datetime.strftime("%m/%d/%Y, %H:%M:%S")
+           
+            point.time(timestamp_ms)
+    
+            # Flatten the "product" field
+            product = json_data["product"]
+    
+            # Set the "product" fields
+            for key, value in json_data["product"].items():
+                if key != "product":
+                    if isinstance(value, dict):
+                        # Handle other nested fields if needed
+                        pass
+                    else:
+                        point.field(key, value)
+    
+            # Flatten the "user" field
+            user = json_data["user"]
+    
+            # Set the remaining fields and tags
+            for key, value in json_data["user"].items():
+                if key != "user":
+                    if isinstance(value, dict):
+                        # Handle other nested fields if needed
+                        pass
+                    else:
+                        point.field(key, value)
+    
+            # Set the remaining fields and tags
+            for key, value in json_data.items():
+                if key != "user" or key != "data":
+                    if isinstance(value, dict):
+                        # Handle other nested fields if needed
+                        pass
+                    else:
+                        point.field(key, value)
+            
+            try:
+                point_data = point
+                print(point_data)
+                write_api.write(bucket, org="globex", record=[point])
+            except InfluxDBError as e:
+                print(e)
+    
+        except json.JSONDecodeError:
+            print("Non-JSON message received, skipping...")
+        except KeyError:
+            print("Missing fields in JSON message, skipping...")
 
