@@ -117,17 +117,16 @@ with InfluxDBClient(url, token) as client:
     
             # Create a new InfluxDB data point
             point = influxdb_client.Point(bucket)
-
+    
             # Set the time for the data point
             timestamp = json_data["timestamp"]
             if isinstance(timestamp, str):
-                timestamp = int(timestamp)
-            timestamp_ms = timestamp * 1000  # Convert to milliseconds
-            
+                timestamp = float(timestamp)
+
             datetime = datetime.fromtimestamp(timestamp/1000.0)
-            datetime_str = datetime.strftime("%m/%d/%Y, %H:%M:%S")
-           
-            point.time(timestamp_ms)
+            datetime_str = datetime.strftime("%m/%d/%Y, %H:%M:%S,%f")
+
+            point.time(parser.parse(datetime_str))
     
             # Flatten the "product" field
             product = json_data["product"]
