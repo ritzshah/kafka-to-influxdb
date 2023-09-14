@@ -1,3 +1,4 @@
+aiokafka
 kafka-python
 transformers
 torch
